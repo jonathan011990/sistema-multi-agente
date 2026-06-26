@@ -4,10 +4,9 @@ from groq import Groq
 from ddgs import DDGS
 from docx import Document
 from concurrent.futures import ThreadPoolExecutor
-from dotenv import load_dotenv
 import io
 
-load_dotenv()
+
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 app = Flask(__name__)
