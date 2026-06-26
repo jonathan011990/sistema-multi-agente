@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Multi-Agente</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
+        
+        header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 30px; text-align: center; border-bottom: 1px solid #333; }
+        header h1 { font-size: 2rem; color: #00d4ff; }
+        header p { color: #888; margin-top: 8px; }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+
+        .input-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .input-box input { 
+            flex: 1; padding: 14px 18px; border-radius: 10px; 
+            border: 1px solid #333; background: #1a1a2e; 
+            color: #fff; font-size: 16px; outline: none;
+        }
+        .input-box input:focus { border-color: #00d4ff; }
+
+        .btn { padding: 14px 24px; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .btn-green { background: #00b894; color: white; }
+        .btn-green:hover { background: #00a381; }
+        .btn-blue { background: #0984e3; color: white; }
+        .btn-blue:hover { background: #0773c5; }
+
+        .agentes { display: flex; gap: 15px; margin-bottom: 25px; }
+        .agente-card { 
+            flex: 1; background: #1a1a2e; border-radius: 12px; 
+            padding: 16px; text-align: center; border: 1px solid #333;
+            transition: 0.3s;
+        }
+        .agente-card.activo { border-color: #00d4ff; background: #16213e; }
+        .agente-card .icono { font-size: 2rem; margin-bottom: 8px; }
+        .agente-card .nombre { font-size: 0.85rem; color: #aaa; }
+
+        #estado { text-align: center; color: #00d4ff; margin-bottom: 20px; font-size: 0.95rem; min-height: 24px; }
+
+        .acciones { display: none; gap: 10px; margin-bottom: 20px; }
+
+        #resultado { 
+            background: #1a1a2e; border-radius: 12px; padding: 30px; 
+            border: 1px solid #333; white-space: pre-wrap; 
+            line-height: 1.8; display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 Sistema Multi-Agente IA</h1>
+        <p>Investiga, redacta y corrige informes automáticamente</p>
+    </header>
+
+    <div class="container">
+        <div class="input-box">
+            <input type="text" id="tema" placeholder="¿Sobre qué tema quieres un informe?" />
+            <button class="btn btn-green" onclick="generar()">Generar</button>
+        </div>
+
+        <div class="agentes">
+            <div class="agente-card" id="card1">
+                <div class="icono">🔍</div>
+                <div class="nombre">Investigador</div>
+            </div>
+            <div class="agente-card" id="card2">
+                <div class="icono">✍️</div>
+                <div class="nombre">Redactor</div>
+            </div>
+            <div class="agente-card" id="card3">
+                <div class="icono">✅</div>
+                <div class="nombre">Corrector</div>
+            </div>
+        </div>
+
+        <div id="estado"></div>
+
+        <div class="acciones" id="acciones">
+            <button class="btn" id="btnTraducir" onclick="toggleIdioma()" style="background:#6c5ce7; color:white">🌐 Traducir al inglés</button>
+            <button class="btn btn-blue" id="btnDescargar" onclick="descargar()">📄 Descargar Word</button>
+        </div>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        let idiomaActual = "es";
+        let informeOriginal = "";
+
+        async function generar() {
+            const tema = document.getElementById("tema").value;
+            if (!tema) return;
+
+            document.getElementById("resultado").style.display = "none";
+            document.getElementById("acciones").style.display = "none";
+            idiomaActual = "es";
+            document.getElementById("btnTraducir").innerText = "🌐 Traducir al inglés";
+
+            activar("card1", "🔍 Investigando...");
+            await new Promise(r => setTimeout(r, 1000));
+            activar("card2", "✍️ Redactando...");
+
+            const res = await fetch("/generar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tema })
+            });
+
+            activar("card3", "✅ Corrigiendo...");
+            const data = await res.json();
+
+            document.querySelectorAll(".agente-card").forEach(c => c.classList.remove("activo"));
+            document.getElementById("estado").innerText = "✅ Informe listo";
+            document.getElementById("resultado").innerText = data.informe;
+            document.getElementById("resultado").style.display = "block";
+            document.getElementById("acciones").style.display = "flex";
+        }
+
+        function activar(id, texto) {
+            document.querySelectorAll(".agente-card").forEach(c => c.classList.remove("activo"));
+            document.getElementById(id).classList.add("activo");
+            document.getElementById("estado").innerText = texto;
+        }
+
+        async function toggleIdioma() {
+            if (idiomaActual === "es") {
+                informeOriginal = document.getElementById("resultado").innerText;
+                document.getElementById("estado").innerText = "🌐 Traduciendo al inglés...";
+                document.getElementById("btnTraducir").innerText = "⏳ Traduciendo...";
+
+                const res = await fetch("/traducir", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ informe: informeOriginal })
+                });
+                const data = await res.json();
+                document.getElementById("resultado").innerText = data.traduccion;
+                document.getElementById("estado").innerText = "✅ Traducido al inglés";
+                document.getElementById("btnTraducir").innerText = "🌐 Volver al español";
+                idiomaActual = "en";
+            } else {
+                document.getElementById("resultado").innerText = informeOriginal;
+                document.getElementById("estado").innerText = "✅ Vuelto al español";
+                document.getElementById("btnTraducir").innerText = "🌐 Traducir al inglés";
+                idiomaActual = "es";
+            }
+        }
+
+        async function descargar() {
+            const tema = document.getElementById("tema").value;
+            const informe = document.getElementById("resultado").innerText;
+            const res = await fetch("/descargar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tema, informe })
+            });
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `informe_${tema}.docx`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
