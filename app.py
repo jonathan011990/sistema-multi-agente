@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 import io
 
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
 
 app = Flask(__name__)
 client = Groq(api_key="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")
@@ -22,6 +22,7 @@ def buscar_web(pregunta, max_results=5):
 def agente_investigador(tema):
     print("🔍 Agente Investigador trabajando...")
     
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     # Las 3 búsquedas en paralelo
     with ThreadPoolExecutor(max_workers=3) as executor:
         f1 = executor.submit(buscar_web, f"¿Qué es {tema}?")
@@ -42,6 +43,9 @@ def agente_investigador(tema):
     return resumen.choices[0].message.content
 
 def agente_redactor(tema, investigacion):
+
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
     informe = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         max_tokens=4000,
@@ -57,6 +61,9 @@ def agente_redactor(tema, investigacion):
     return informe.choices[0].message.content
 
 def agente_corrector(informe):
+
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
     correccion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         max_tokens=4000,
@@ -73,6 +80,9 @@ Devuelve el informe completo corregido."""},
 
 
 def agente_traductor(informe):
+
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    
     print("🌐 Agente Traductor trabajando...")
     traduccion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
