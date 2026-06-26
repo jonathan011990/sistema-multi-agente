@@ -22,7 +22,7 @@ def buscar_web(pregunta, max_results=5):
 def agente_investigador(tema):
     print("🔍 Agente Investigador trabajando...")
     
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    client = Groq(api_key="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")
     # Las 3 búsquedas en paralelo
     with ThreadPoolExecutor(max_workers=3) as executor:
         f1 = executor.submit(buscar_web, f"¿Qué es {tema}?")
@@ -44,7 +44,7 @@ def agente_investigador(tema):
 
 def agente_redactor(tema, investigacion):
 
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    client = Groq(api_key="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")
 
     informe = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -62,7 +62,7 @@ def agente_redactor(tema, investigacion):
 
 def agente_corrector(informe):
 
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    client = Groq(api_key="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")
 
     correccion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -81,8 +81,8 @@ Devuelve el informe completo corregido."""},
 
 def agente_traductor(informe):
 
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-    
+    client = Groq(api_key="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")
+
     print("🌐 Agente Traductor trabajando...")
     traduccion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
